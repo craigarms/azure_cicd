@@ -103,6 +103,8 @@
       admin_username: "{{ item.user }}"
       admin_password: "{{ item.password }}"
       storage_account: "{{ resource_group.name }}"
+      storage_container: "{{ item.name }}"
+      storage_blob: "{{ item.name }}.vhd"
       network_interfaces: "{{ item.network_interface }}"
       image:
         offer: "{{ item.image }}"
