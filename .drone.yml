@@ -5,7 +5,15 @@ type: docker
 steps:
   - name: Deploy with Ansible
     image: craigarms/azure-ansible:1
-    secrets: [AZURE_TENANT, AZURE_SUBSCRIPTION_ID, AZURE_CLIENT_ID, AZURE_SECRET]
+    environment: 
+      AZURE_TENANT:
+        from_secret: AZURE_TENANT
+      AZURE_SUBSCRIPTION_ID:
+        from_secret: AZURE_SUBSCRIPTION_ID
+      AZURE_CLIENT_ID:
+        from_secret: AZURE_CLIENT_ID
+      AZURE_SECRET:
+        from_secret: AZURE_SECRET
     commands:
       - export
       - ansible-playbook playbooks/03_deploy_multiple_vm.yml
