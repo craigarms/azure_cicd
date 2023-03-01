@@ -7,4 +7,4 @@ steps:
     image: craigarms/azure-ansible:1
     secrets: [AZURE_TENANT, AZURE_SUBSCRIPTION_ID, AZURE_CLIENT_ID, AZURE_SECRET]
     commands:
-      - ansible-playbook 03_deploy_multiple_vm.yml
+      - ansible-playbook playbooks/03_deploy_multiple_vm.yml
