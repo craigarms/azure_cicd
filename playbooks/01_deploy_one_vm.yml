@@ -1,0 +1,75 @@
+---
+- name: Create Azure VM
+  hosts: localhost
+  connection: local
+  collections:
+    azure.azcollection
+
+  tasks:
+  - name: Create resource group
+    azure_rm_resourcegroup:
+      name: myResourceGroup
+      location: eastus
+
+  - name: Create virtual network
+    azure_rm_virtualnetwork:
+      resource_group: myResourceGroup
+      name: Vnet_10.0.0.0
+      address_prefixes: "10.0.0.0/16"
+
+  - name: Add subnet
+    azure_rm_subnet:
+      resource_group: myResourceGroup
+      name: Subnet_10.0.1.0
+      address_prefix: "10.0.1.0/24"
+      virtual_network: Vnet_10.0.0.0
+
+  - name: Create public IP address
+    azure_rm_publicipaddress:
+      resource_group: myResourceGroup
+      allocation_method: Static
+      name: PubIP_1
+    register: output_ip_address
+
+  - name: Public IP of VM
+    debug:
+      msg: "The public IP is {{ output_ip_address.state.ip_address }}."
+
+  - name: Create Network Security Group that allows SSH
+    azure_rm_securitygroup:
+      resource_group: myResourceGroup
+      name: SG_Allow_SSH
+      rules:
+        - name: SSH
+          protocol: Tcp
+          destination_port_range: 22
+          access: Allow
+          priority: 1001
+          direction: Inbound
+
+  - name: Create virtual network interface card
+    azure_rm_networkinterface:
+      resource_group: myResourceGroup
+      name: vNic1
+      virtual_network: Vnet_10.0.0.0
+      subnet: Subnet_10.0.1.0
+      public_ip_name: PubIP_1
+      security_group: SG_Allow_SSH
+
+  - name: Create VM
+    azure_rm_virtualmachine:
+      resource_group: myResourceGroup
+      name: Centos1
+      state: absent
+      vm_size: Standard_DS1_v2
+      admin_username: azureuser
+      ssh_password_enabled: false
+      ssh_public_keys:
+        - path: /home/azureuser/.ssh/authorized_keys
+          key_data: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDQnM8t1E1EBcoM8awx5Yf4ejOqYuHx/9/OJ2Ili8C8rQvbEqlXWCJJiOxSU41sS3ZhbC04uVntcoh9BYJfOA3Pa7CikdZQZmHWCvI1ZIjeQawG2s+GSHtpghCF9Q5vdaDm+dD07cbxLVNbQgrMgChuzvQreLpB9QWYCVmwQYKJ/V11LCRjrI7M9rfG/FoawXQ0j//8li0dGY7tEmU5Z/zDtSSmxt2OCBIST0rMkzSpOkN/fABc7J2rc7Si8+CZ+aFX/zg/GMyxUwp9sIGWGn5WGC1v97hukFHcTpzE3rn1hmJ9omAiqASIz0oowWKLxDzeMpqi4X82YZY7sk33K0Ax craig@DESKTOP-7JG5A8E"
+      network_interfaces: vNic1
+      image:
+        offer: CentOS
+        publisher: OpenLogic
+        sku: '7.5'
+        version: latest
