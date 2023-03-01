@@ -105,6 +105,7 @@
       storage_account: "{{ resource_group.name }}"
       storage_container: "{{ item.name }}"
       storage_blob: "{{ item.name }}.vhd"
+      os_type: Windows
       network_interfaces: "{{ item.network_interface }}"
       image:
         offer: "{{ item.image }}"
