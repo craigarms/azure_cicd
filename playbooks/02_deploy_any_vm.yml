@@ -1,0 +1,80 @@
+---
+- name: Create Azure VM
+  hosts: localhost
+  connection: local
+  collections:
+    azure.azcollection
+  gather_facts: false
+  
+  vars_files:
+    - vars.yml
+    
+  tasks:
+  - name: Create resource group
+    azure_rm_resourcegroup:
+      name: "{{ resource_group.name }}"
+      location: "{{ resource_group.location }}"
+      
+  - name: Create virtual network
+    azure_rm_virtualnetwork:
+      resource_group: "{{ resource_group.name }}"
+      name: "{{ virtual_network.name }}"
+      address_prefixes: "{{ virtual_network.prefix }}"
+      
+  - name: Add subnet
+    azure_rm_subnet:
+      resource_group: "{{ resource_group.name }}"
+      name: "{{ subnet.name }}"
+      address_prefix: "{{ subnet.network }}"
+      virtual_network: "{{ virtual_network.name }}"
+      
+  - name: Create public IP address
+    azure_rm_publicipaddress:
+      resource_group: "{{ resource_group.name }}"
+      allocation_method: "{{ public_ip.allocation }}"
+      name: "{{ public_ip.name }}"
+    register: output_ip_address
+    
+  - name: Public IP of VM
+    debug:
+      msg: "The public IP is {{ output_ip_address.state.ip_address }}."
+      
+  - name: Create Network Security Group that allows SSH
+    azure_rm_securitygroup:
+      resource_group: "{{ resource_group.name }}"
+      name: "{{ security_group.name }}"
+      rules:
+        - name: "{{ item.name }}"
+          protocol: "{{ item.protocol }}"
+          destination_port_range: "{{ item.dst_port }}"
+          access: "{{ item.access }}"
+          priority: "{{ item.priority }}"
+          direction: "{{ item.direction }}"
+    loop: "{{ security_group.rules }}"
+    tags: sg
+          
+  - name: Create virtual network interface card
+    azure_rm_networkinterface:
+      resource_group: "{{ resource_group.name }}"
+      name: "{{ network_interface.name }}"
+      virtual_network: "{{ virtual_network.name }}"
+      subnet: "{{ subnet.name }}"
+      public_ip_name: "{{ public_ip.name }}"
+      security_group: "{{ security_group.name }}"
+      
+  - name: Create VM
+    azure_rm_virtualmachine:
+      resource_group: "{{ resource_group.name }}"
+      name: "{{ vm.name }}"
+      vm_size: "{{ vm.size }}"
+      admin_username: "{{ vm.user }}"
+      ssh_password_enabled: false
+      ssh_public_keys:
+        - path: /home/{{ vm.user }}/.ssh/authorized_keys
+          key_data: "{{ vm.key_data }}"
+      network_interfaces: "{{ network_interface.name }}"
+      image:
+        offer: "{{ vm.image }}"
+        publisher: "{{ vm.publisher }}"
+        sku: "{{ vm.sku }}"
+        version: "{{ vm.version }}"

@@ -1,0 +1,44 @@
+resource_group:
+  name: myRessourceGroup
+  location: eastus
+
+virtual_network:
+  name: Vnet_10.0.0.0
+  prefix: 10.0.0.0/16
+
+subnet:
+  name: Subnet_10.0.1.0
+  network: 10.0.1.0/24
+  
+public_ip:
+  allocation: Static
+  name: Pub1
+  
+security_group:
+  name: SG_Allow_SSH_HTTP
+  rules:
+    - name: SSH
+      protocol: Tcp
+      dst_port: 22
+      access: Allow
+      priority: 1001
+      direction: Inbound
+    - name: HTTP
+      protocol: Tcp
+      dst_port: 80
+      access: Allow
+      priority: 1002
+      direction: Inbound
+  
+network_interface:
+  name: vNic1
+
+vm:
+  name: Centos1
+  size: Standard_DS1_v2
+  user: azureuser
+  key_data: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDQnM8t1E1EBcoM8awx5Yf4ejOqYuHx/9/OJ2Ili8C8rQvbEqlXWCJJiOxSU41sS3ZhbC04uVntcoh9BYJfOA3Pa7CikdZQZmHWCvI1ZIjeQawG2s+GSHtpghCF9Q5vdaDm+dD07cbxLVNbQgrMgChuzvQreLpB9QWYCVmwQYKJ/V11LCRjrI7M9rfG/FoawXQ0j//8li0dGY7tEmU5Z/zDtSSmxt2OCBIST0rMkzSpOkN/fABc7J2rc7Si8+CZ+aFX/zg/GMyxUwp9sIGWGn5WGC1v97hukFHcTpzE3rn1hmJ9omAiqASIz0oowWKLxDzeMpqi4X82YZY7sk33K0Ax craig@DESKTOP-7JG5A8E
+  image: CentOS
+  publisher: OpenLogic
+  sku: 7.5
+  version: latest

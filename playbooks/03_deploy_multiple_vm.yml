@@ -1,0 +1,107 @@
+---
+- name: Create Azure VM
+  hosts: localhost
+  connection: local
+  collections:
+    azure.azcollection
+  gather_facts: false
+  
+  vars_files:
+    - multi_vm_vars.yml
+    
+  tasks:
+  - name: Create resource group
+    azure_rm_resourcegroup:
+      name: "{{ resource_group.name }}"
+      location: "{{ resource_group.location }}"
+      
+  - name: Create virtual network
+    azure_rm_virtualnetwork:
+      resource_group: "{{ resource_group.name }}"
+      name: "{{ virtual_network.name }}"
+      address_prefixes: "{{ virtual_network.prefix }}"
+      
+  - name: Add subnet
+    azure_rm_subnet:
+      resource_group: "{{ resource_group.name }}"
+      name: "{{ item.name }}"
+      address_prefix: "{{ item.network }}"
+      virtual_network: "{{ virtual_network.name }}"
+    loop: "{{ subnet }}"
+      
+  - name: Create public IP address
+    azure_rm_publicipaddress:
+      resource_group: "{{ resource_group.name }}"
+      allocation_method: "{{ item.allocation }}"
+      name: "{{ item.name }}"
+    loop: "{{ public_ip }}"
+    register: output_ip_address
+    
+  - name: Public IP of VM
+    debug:
+      msg: "The public IP is {{ item.state.ip_address }}."
+    loop: "{{ output_ip_address.results }}"
+      
+  - name: Create Network Security Group that allows SSH
+    azure_rm_securitygroup:
+      resource_group: "{{ resource_group.name }}"
+      name: "{{ item.name }}"
+      rules:
+        - name: "{{ item.rules.name }}"
+          protocol: "{{ item.rules.protocol }}"
+          destination_port_range: "{{ item.rules.dst_port }}"
+          access: "{{ item.rules.access }}"
+          priority: "{{ item.rules.priority }}"
+          direction: "{{ item.rules.direction }}"
+    loop: "{{ security_group }}"
+    tags: sg
+  
+          
+  - name: Create virtual network interface card
+    azure_rm_networkinterface:
+      resource_group: "{{ resource_group.name }}"
+      name: "{{ item.name }}"
+      virtual_network: "{{ item.virt_net }}"
+      subnet: "{{ item.subnet }}"
+      public_ip_name: "{{ item.pubip }}"
+      security_group: "{{ item.sg }}"
+    loop: "{{ network_interface }}"
+      
+  - name: Create Linux VM
+    azure_rm_virtualmachine:
+      resource_group: "{{ resource_group.name }}"
+      name: "{{ item.name }}"
+      vm_size: "{{ item.size }}"
+      tags:
+          os: "{{ item.os }}"
+      admin_username: "{{ item.user }}"
+      ssh_password_enabled: false
+      ssh_public_keys:
+        - path: /home/{{ item.user }}/.ssh/authorized_keys
+          key_data: "{{ item.key_data }}"
+      network_interfaces: "{{ item.network_interface }}"
+      image:
+        offer: "{{ item.image }}"
+        publisher: "{{ item.publisher }}"
+        sku: "{{ item.sku }}"
+        version: "{{ item.version }}"
+    loop: "{{ vm }}"
+    when: item.os == "linux"
+    
+  - name: Create Windows VM
+    azure_rm_virtualmachine:
+      resource_group: "{{ resource_group.name }}"
+      name: "{{ item.name }}"
+      vm_size: "{{ item.size }}"
+      tags:
+          os: "{{ item.os }}"
+      admin_username: "{{ item.user }}"
+      admin_password: "{{ item.password }}"
+      network_interfaces: "{{ item.network_interface }}"
+      image:
+        offer: "{{ item.image }}"
+        publisher: "{{ item.publisher }}"
+        sku: "{{ item.sku }}"
+        version: "{{ item.version }}"
+    loop: "{{ vm }}"
+    when: item.os == "windows"
