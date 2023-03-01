@@ -97,6 +97,7 @@
           os: "{{ item.os }}"
       admin_username: "{{ item.user }}"
       admin_password: "{{ item.password }}"
+      storage_account: "{{ resource_group.name }}"
       network_interfaces: "{{ item.network_interface }}"
       image:
         offer: "{{ item.image }}"
