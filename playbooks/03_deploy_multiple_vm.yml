@@ -59,7 +59,7 @@
   - name: Create Resource Group Storage Account
     azure_rm_storageaccount:
       resource_group: "{{ resource_group.name }}"
-      name: "{{ resource_group.name }}"
+      name: "{{ resource_group.name[:24] | lower }}"
       account_type: Standard_LRS
           
   - name: Create virtual network interface card
