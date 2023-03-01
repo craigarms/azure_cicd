@@ -1,0 +1,10 @@
+kind: pipeline
+name: Azure_CICD_With_Ansible
+type: docker
+
+steps:
+  - name: Deploy with Ansible
+    image: craigarms/azure-ansible:1
+    secrets: [AZURE_TENANT, AZURE_SUBSCRIPTION_ID, AZURE_CLIENT_ID, AZURE_SECRET]
+    commands:
+      - ansible-playbook 03_deploy_multiple_vm.yml
