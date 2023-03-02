@@ -72,7 +72,7 @@ vm:
     password: AzuR3Pa$$word
     image: windowsserver
     publisher: microsoftwindowsserver
-    sku: 2022-datacenter-azure-edition
+    sku: 2019-Datacenter
     version: latest
     network_interface: vNic2
   - name: Windows2
@@ -82,6 +82,6 @@ vm:
     password: AzuR3Pa$$word
     image: windowsserver
     publisher: microsoftwindowsserver
-    sku: 2022-datacenter-azure-edition
+    sku: 2019-Datacenter
     version: latest
     network_interface: vNic3
