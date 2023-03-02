@@ -48,7 +48,7 @@ network_interface:
     subnet: Subnet_10.0.1.0
     pubip: Pub2
     sg: SG_Allow_RDP
-  - name: vNic2
+  - name: vNic3
     virt_net: Vnet_10.0.0.0
     subnet: Subnet_10.0.1.0
     pubip: Pub3
