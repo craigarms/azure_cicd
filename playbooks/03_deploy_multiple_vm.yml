@@ -104,7 +104,7 @@
       admin_password: "{{ item.password }}"
       storage_account: "{{ resource_group.name }}"
       storage_container: "{{ item.name }}"
-      storage_blob: "{{ item.name }}.vhd"
+      storage_blob: "{{ item.name [:63] | lower }}.vhd"
       os_type: Windows
       network_interfaces: "{{ item.network_interface }}"
       image:
