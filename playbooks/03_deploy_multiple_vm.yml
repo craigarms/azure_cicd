@@ -102,9 +102,9 @@
           os: "{{ item.os }}"
       admin_username: "{{ item.user }}"
       admin_password: "{{ item.password }}"
-      storage_account: "{{ resource_group.name }}"
-      storage_container: "{{ item.name }}"
-      storage_blob: "{{ item.name [:63] | lower }}"
+      storage_account: "{{ resource_group.name[:24] | lower }}"
+      storage_container: "{{ item.name[:63] | lower }}"
+      storage_blob: "{{ item.name[:63] | lower }}"
       os_type: Windows
       network_interfaces: "{{ item.network_interface }}"
       image:
